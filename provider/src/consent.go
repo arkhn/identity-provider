@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -67,24 +66,8 @@ func handleConsent(hConf *hydraConfig) func(w http.ResponseWriter, r *http.Reque
 				RememberFor:              3600,
 				Session:                  struct{}{},
 			}
-			jsonBody, _ := json.Marshal(body)
 
-			req, _ := http.NewRequest("PUT", putUrl, bytes.NewBuffer(jsonBody))
-			resp, err := http.DefaultClient.Do(req)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer resp.Body.Close()
-			b, err := ioutil.ReadAll(resp.Body)
-
-			if err != nil {
-				panic(err.Error())
-			}
-
-			jsonResp := RedirectResp{}
-			json.Unmarshal(b, &jsonResp)
-
-			http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
+			putAndRedirect(putUrl, body, w, r, http.DefaultClient)
 			return
 		}
 

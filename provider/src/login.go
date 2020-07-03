@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -25,9 +22,7 @@ func handleLogin(hConf *hydraConfig) func(w http.ResponseWriter, r *http.Request
 		getUrl := fmt.Sprintf("%s?%s", hConf.LoginRequestRoute, params.Encode())
 		resp, _ := http.Get(getUrl)
 
-		b, _ := ioutil.ReadAll(resp.Body)
-		var jsonResp interface{}
-		json.Unmarshal(b, &jsonResp)
+		jsonResp := readResponseAsJson(resp)
 		log.Println(jsonResp)
 		// TODO do stuff with response
 
@@ -40,8 +35,8 @@ func handleLogin(hConf *hydraConfig) func(w http.ResponseWriter, r *http.Request
 			}
 
 			// Check the user's credentials
-			if r.Form.Get("username") != "a" || r.Form.Get("password") != "a" {
-				http.Error(w, "Provided credentials are wrong, try buzz:lightyear", http.StatusBadRequest)
+			if r.Form.Get("username") != "" || r.Form.Get("password") != "" {
+				http.Error(w, "Provided credentials are wrong, try empty fields", http.StatusBadRequest)
 				return
 			}
 
@@ -68,24 +63,8 @@ func handleLogin(hConf *hydraConfig) func(w http.ResponseWriter, r *http.Request
 				RememberFor: 3600,
 				Acr:         "..",
 			}
-			jsonBody, _ := json.Marshal(body)
 
-			req, _ := http.NewRequest("PUT", putUrl, bytes.NewBuffer(jsonBody))
-			resp, err := http.DefaultClient.Do(req)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer resp.Body.Close()
-			b, err := ioutil.ReadAll(resp.Body)
-
-			if err != nil {
-				panic(err.Error())
-			}
-
-			jsonResp := RedirectResp{}
-			json.Unmarshal(b, &jsonResp)
-
-			http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
+			putAndRedirect(putUrl, body, w, r, http.DefaultClient)
 			return
 		}
 

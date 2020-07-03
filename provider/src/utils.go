@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"html/template"
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -30,4 +34,33 @@ func renderTemplate(w http.ResponseWriter, id string, d interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func readResponseAsJson(resp *http.Response) interface{} {
+	b, _ := ioutil.ReadAll(resp.Body)
+	var jsonResp interface{}
+	json.Unmarshal(b, &jsonResp)
+
+	return jsonResp
+}
+
+func putAndRedirect(url string, body interface{}, w http.ResponseWriter, r *http.Request, client *http.Client) {
+	jsonBody, _ := json.Marshal(body)
+
+	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(jsonBody))
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	jsonResp := RedirectResp{}
+	json.Unmarshal(b, &jsonResp)
+
+	http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
 }
