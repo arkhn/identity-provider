@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	"github.com/julienschmidt/httprouter"
 	"github.com/ory/common/env"
 )
 
@@ -13,10 +14,6 @@ var store = sessions.NewCookieStore([]byte("something-very-secret-keep-it-safe")
 
 // The session is a unique session identifier
 const sessionName = "authentication"
-
-// A state for performing the OAuth 2.0 flow. This is usually not part of a consent app, but in order for the demo
-// to make sense, it performs the OAuth 2.0 authorize code flow.
-var state = "demostatedemostatedemo"
 
 // Context we want handlers to have access to
 type Env struct {
@@ -34,14 +31,18 @@ func main() {
 
 	envContext := &Env{hConf, db}
 
+	router := httprouter.New()
+
 	// Set up a router and some routes
-	http.HandleFunc("/login", envContext.handleLogin)
-	http.HandleFunc("/consent", envContext.handleConsent)
+	router.GET("/login", envContext.getLogin)
+	router.POST("/login", envContext.postLogin)
+	router.GET("/consent", envContext.getConsent)
+	router.POST("/consent", envContext.postConsent)
 
 	// TODO
-	http.HandleFunc("/signup", envContext.handleSignup)
+	router.POST("/signup", envContext.handleSignup)
 
 	// Start http server
 	log.Println("Listening on :" + env.Getenv("PORT", "3002"))
-	log.Fatal(http.ListenAndServe(":"+env.Getenv("PORT", "3002"), nil))
+	log.Fatal(http.ListenAndServe(":"+env.Getenv("PORT", "3002"), router))
 }

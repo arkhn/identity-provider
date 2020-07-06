@@ -7,16 +7,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gorilla/sessions"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
-
-// This store will be used to save user authentication
-var store = sessions.NewCookieStore([]byte("something-very-secret-keep-it-safe"))
-
-// The session is a unique session identifier
-const sessionName = "authentication"
 
 var clientConfig = oauth2.Config{
 	ClientID:     "open-id-client",
@@ -26,11 +19,9 @@ var clientConfig = oauth2.Config{
 		TokenURL: "http://localhost:4444/oauth2/token",
 	},
 	RedirectURL: "http://localhost:3003/callback",
-	Scopes:      []string{"openid"},
+	Scopes:      []string{"openid", "offline_access"},
 }
 
-// A state for performing the OAuth 2.0 flow. This is usually not part of a consent app, but in order for the demo
-// to make sense, it performs the OAuth 2.0 authorize code flow.
 var state = "demostatedemostatedemo"
 
 func main() {

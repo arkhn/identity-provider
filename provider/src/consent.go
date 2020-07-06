@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/pkg/errors"
 )
 
 // After pressing "click here", the Authorize Code flow is performed and the user is redirected to Hydra. Next, Hydra
 // validates the consent request (it's not valid yet) and redirects us to the consent endpoint which we set with `CONSENT_URL=http://localhost:4445/consent`.
-func (env *Env) handleConsent(w http.ResponseWriter, r *http.Request) {
+func (env *Env) getConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Get the consent requerst id from the query.
 	challenge := r.URL.Query().Get("consent_challenge")
 
@@ -39,47 +40,6 @@ func (env *Env) handleConsent(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	// Apparently, the user is logged in. Now we check if we received POST
-	// request, or a GET request.
-	if r.Method == "POST" {
-		// Ok, apparently the user gave their consent!
-
-		// Parse the HTTP form - required by Go.
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, errors.Wrap(err, "Could not parse form").Error(), http.StatusBadRequest)
-			return
-		}
-
-		// Let's check which scopes the user granted.
-		var grantedScopes = []string{}
-		for key := range r.PostForm {
-			// And add each scope to the list of granted scopes.
-			grantedScopes = append(grantedScopes, key)
-		}
-
-		putUrl := fmt.Sprintf("%s/accept?%s", env.hConf.ConsentRequestRoute, params.Encode())
-
-		// TODO use session to add info about the current user
-		session := SessionInfo{
-			IdToken: IdTokenClaims{
-				Name:  "bob",
-				Email: "bob@arkhn.com",
-			},
-		}
-
-		body := &BodyAcceptOAuth2Consent{
-			GrantScope:               grantedScopes,
-			GrantAccessTokenAudience: []string{"http://localhost:3002"}, // TODO
-			Remember:                 false,
-			RememberFor:              3600,
-			Session:                  session,
-		}
-
-		putAndRedirect(putUrl, body, w, r, http.DefaultClient)
-		return
-	}
-
-	// We received a get request, so let's show the html site where the user may give consent.
 	fillTemplate := struct {
 		ConsentRequestID string
 		ClientID         string
@@ -91,4 +51,45 @@ func (env *Env) handleConsent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	renderTemplate(w, "consent.html", fillTemplate)
+}
+
+func (env *Env) postConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// Get the consent requerst id from the query.
+	challenge := r.URL.Query().Get("consent_challenge")
+
+	params := url.Values{}
+	params.Add("consent_challenge", challenge)
+
+	// Parse the HTTP form - required by Go.
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, errors.Wrap(err, "Could not parse form").Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Let's check which scopes the user granted.
+	var grantedScopes = []string{}
+	for key := range r.PostForm {
+		// And add each scope to the list of granted scopes.
+		grantedScopes = append(grantedScopes, key)
+	}
+
+	putUrl := fmt.Sprintf("%s/accept?%s", env.hConf.ConsentRequestRoute, params.Encode())
+
+	// TODO use session to add info about the current user
+	session := SessionInfo{
+		IdToken: IdTokenClaims{
+			Name:  "bob",
+			Email: "bob@arkhn.com",
+		},
+	}
+
+	body := &BodyAcceptOAuth2Consent{
+		GrantScope:               grantedScopes,
+		GrantAccessTokenAudience: []string{"http://localhost:3002"}, // TODO
+		Remember:                 false,
+		RememberFor:              3600,
+		Session:                  session,
+	}
+
+	putAndRedirect(putUrl, body, w, r, http.DefaultClient)
 }
