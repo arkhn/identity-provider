@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -25,9 +24,11 @@ func (env *Env) handleConsent(w http.ResponseWriter, r *http.Request) {
 	resp, _ := http.Get(getUrl)
 
 	b, _ := ioutil.ReadAll(resp.Body)
-	var jsonResp interface{}
+	var jsonResp struct {
+		RequestedScopes []string `json:"requested_scope"`
+	}
 	json.Unmarshal(b, &jsonResp)
-	log.Println(jsonResp)
+	requestedScopes := jsonResp.RequestedScopes
 	// TODO do stuff with response
 
 	// This helper checks if the user is already authenticated. If not, we
@@ -67,8 +68,8 @@ func (env *Env) handleConsent(w http.ResponseWriter, r *http.Request) {
 		}
 
 		body := &BodyAcceptOAuth2Consent{
-			GrantScope:               []string{"openid"},
-			GrantAccessTokenAudience: []string{"http://localhost:3002"},
+			GrantScope:               grantedScopes,
+			GrantAccessTokenAudience: []string{"http://localhost:3002"}, // TODO
 			Remember:                 false,
 			RememberFor:              3600,
 			Session:                  session,
@@ -86,7 +87,7 @@ func (env *Env) handleConsent(w http.ResponseWriter, r *http.Request) {
 	}{
 		ConsentRequestID: challenge,
 		ClientID:         "app id",
-		RequestedScopes:  []string{"scope1", "scope2"},
+		RequestedScopes:  requestedScopes,
 	}
 
 	renderTemplate(w, "consent.html", fillTemplate)

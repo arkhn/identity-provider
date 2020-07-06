@@ -57,7 +57,7 @@ func handleHome(w http.ResponseWriter, _ *http.Request) {
 	params.Add("response_type", "code")
 	params.Add("client_id", "open-id-client")
 	params.Add("redirect_uri", "http://localhost:3003/callback")
-	params.Add("scope", "openid")
+	params.Add("scope", "openid offline_access")
 	params.Add("state", state)
 	params.Add("aud", "http://localhost:3003")
 
