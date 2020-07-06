@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -22,13 +21,21 @@ func (env *Env) getConsent(w http.ResponseWriter, r *http.Request, _ httprouter.
 	params.Add("consent_challenge", challenge)
 
 	getUrl := fmt.Sprintf("%s?%s", env.hConf.ConsentRequestRoute, params.Encode())
-	resp, _ := http.Get(getUrl)
+	resp, err := http.Get(getUrl)
 
-	b, _ := ioutil.ReadAll(resp.Body)
-	var jsonResp struct {
-		RequestedScopes []string `json:"requested_scope"`
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while fetching consent request info from hydra").Error(), http.StatusInternalServerError)
 	}
-	json.Unmarshal(b, &jsonResp)
+
+	jsonResp := struct {
+		RequestedScopes []string `json:"requested_scope"`
+	}{}
+	err = json.NewDecoder(resp.Body).Decode(&jsonResp)
+
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Could not parse consent request info").Error(), http.StatusInternalServerError)
+	}
+
 	requestedScopes := jsonResp.RequestedScopes
 	// TODO do stuff with response
 

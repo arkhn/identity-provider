@@ -36,14 +36,6 @@ func renderTemplate(w http.ResponseWriter, id string, d interface{}) bool {
 	return true
 }
 
-func readResponseAsJson(resp *http.Response) interface{} {
-	b, _ := ioutil.ReadAll(resp.Body)
-	var jsonResp interface{}
-	json.Unmarshal(b, &jsonResp)
-
-	return jsonResp
-}
-
 func putAndRedirect(url string, body interface{}, w http.ResponseWriter, r *http.Request, client *http.Client) {
 	jsonBody, _ := json.Marshal(body)
 

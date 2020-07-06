@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,9 +19,19 @@ func (env *Env) getLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	params.Add("login_challenge", challenge)
 
 	getUrl := fmt.Sprintf("%s?%s", env.hConf.LoginRequestRoute, params.Encode())
-	resp, _ := http.Get(getUrl)
+	resp, err := http.Get(getUrl)
 
-	jsonResp := readResponseAsJson(resp)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while fetching login request info from hydra").Error(), http.StatusInternalServerError)
+	}
+
+	var jsonResp interface{}
+	err = json.NewDecoder(resp.Body).Decode(&jsonResp)
+
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Could not parse login request info").Error(), http.StatusInternalServerError)
+	}
+
 	log.Println(jsonResp)
 	// TODO do stuff with response
 
