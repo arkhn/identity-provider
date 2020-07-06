@@ -18,16 +18,28 @@ const sessionName = "authentication"
 // to make sense, it performs the OAuth 2.0 authorize code flow.
 var state = "demostatedemostatedemo"
 
+// Context we want handlers to have access to
+type Env struct {
+	hConf *hydraConfig
+	db    UserStore
+}
+
 func main() {
 
-	hConf := hydraConfig{
+	hConf := &hydraConfig{
 		LoginRequestRoute:   "http://localhost:4445/oauth2/auth/requests/login",
 		ConsentRequestRoute: "http://localhost:4445/oauth2/auth/requests/consent",
 	}
+	db := ConnectDB()
+
+	envContext := &Env{hConf, db}
 
 	// Set up a router and some routes
-	http.HandleFunc("/login", handleLogin(&hConf))
-	http.HandleFunc("/consent", handleConsent(&hConf))
+	http.HandleFunc("/login", envContext.handleLogin)
+	http.HandleFunc("/consent", envContext.handleConsent)
+
+	// TODO
+	http.HandleFunc("/signup", envContext.handleSignup)
 
 	// Start http server
 	log.Println("Listening on :" + env.Getenv("PORT", "3002"))
