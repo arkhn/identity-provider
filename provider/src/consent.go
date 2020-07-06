@@ -86,7 +86,7 @@ func (env *Env) handleConsent(w http.ResponseWriter, r *http.Request) {
 		RequestedScopes  []string
 	}{
 		ConsentRequestID: challenge,
-		ClientID:         "app id",
+		ClientID:         "app id", // TODO
 		RequestedScopes:  requestedScopes,
 	}
 
