@@ -6,18 +6,28 @@ type hydraConfig struct {
 }
 
 type BodyAcceptOAuth2Login struct {
-	Subject     string `json:"subject"`
+	Acr         string `json:"acr"`
 	Remember    bool   `json:"remember"`
 	RememberFor int    `json:"remember_for"`
-	Acr         string `json:"acr"`
+	Subject     string `json:"subject"`
+}
+
+type IdTokenClaims struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+type SessionInfo struct {
+	// AccessToken string        `json:"access_token"` // TODO?
+	IdToken IdTokenClaims `json:"id_token"`
 }
 
 type BodyAcceptOAuth2Consent struct {
-	GrantScope               []string `json:"grant_scope"`
-	GrantAccessTokenAudience []string `json:"grant_access_token_audience"`
-	Remember                 bool     `json:"remember"`
-	RememberFor              int      `json:"remember_for"`
-	Session                  struct{} `json:"session"` // TODO
+	GrantScope               []string    `json:"grant_scope"`
+	GrantAccessTokenAudience []string    `json:"grant_access_token_audience"`
+	Remember                 bool        `json:"remember"`
+	RememberFor              int         `json:"remember_for"`
+	Session                  SessionInfo `json:"session"` // TODO
 }
 
 type RedirectResp struct {

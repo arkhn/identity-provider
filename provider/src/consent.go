@@ -59,12 +59,20 @@ func handleConsent(hConf *hydraConfig) func(w http.ResponseWriter, r *http.Reque
 
 			putUrl := fmt.Sprintf("%s/accept?%s", hConf.ConsentRequestRoute, params.Encode())
 
+			// TODO use session to add info about the current user
+			session := SessionInfo{
+				IdToken: IdTokenClaims{
+					Name:  "bob",
+					Email: "bob@arkhn.com",
+				},
+			}
+
 			body := &BodyAcceptOAuth2Consent{
 				GrantScope:               []string{"openid"},
 				GrantAccessTokenAudience: []string{"http://localhost:3002"},
 				Remember:                 false,
 				RememberFor:              3600,
-				Session:                  struct{}{},
+				Session:                  session,
 			}
 
 			putAndRedirect(putUrl, body, w, r, http.DefaultClient)

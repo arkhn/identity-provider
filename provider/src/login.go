@@ -58,10 +58,10 @@ func handleLogin(hConf *hydraConfig) func(w http.ResponseWriter, r *http.Request
 
 			// TODO properly fill body
 			body := &BodyAcceptOAuth2Login{
-				Subject:     "bob",
+				Acr:         "..",
 				Remember:    false,
 				RememberFor: 3600,
-				Acr:         "..",
+				Subject:     "bob",
 			}
 
 			putAndRedirect(putUrl, body, w, r, http.DefaultClient)
