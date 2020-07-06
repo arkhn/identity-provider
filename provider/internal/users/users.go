@@ -1,4 +1,4 @@
-package main
+package users
 
 // TODO should we move user management outside the main package?
 
@@ -12,6 +12,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type UserStore interface {
+	AddUser(user *User) (*User, error)
+	FindUser(email string, password string) (*User, error)
+}
+
 // TODO What else do we need?
 // Authorizations for each client?
 // Personal info?
@@ -24,11 +29,6 @@ type User struct {
 
 type DB struct {
 	*gorm.DB
-}
-
-type UserStore interface {
-	AddUser(user *User) (*User, error)
-	FindUser(email string, password string) (*User, error)
 }
 
 func ConnectDB() *DB {
@@ -49,7 +49,6 @@ func ConnectDB() *DB {
 		fmt.Println("error", err)
 		panic(err)
 	}
-	// defer db.Close()
 
 	// Migrate the schema
 	// TODO check doc about that
@@ -61,7 +60,7 @@ func ConnectDB() *DB {
 func (db *DB) FindUser(email string, password string) (*User, error) {
 	user := &User{}
 
-	if err := db.Where("Email = ?", email).First(user).Error; err != nil {
+	if err := db.Where(&User{Email: email}).First(user).Error; err != nil {
 		return nil, errors.New("Email address not found")
 	}
 

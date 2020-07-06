@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory/common/env"
+
+	"provider/internal/users"
 )
 
 // This store will be used to save user authentication
@@ -15,10 +17,9 @@ var store = sessions.NewCookieStore([]byte("something-very-secret-keep-it-safe")
 // The session is a unique session identifier
 const sessionName = "authentication"
 
-// Context we want handlers to have access to
 type Env struct {
 	hConf *hydraConfig
-	db    UserStore
+	db    users.UserStore
 }
 
 func main() {
@@ -27,8 +28,9 @@ func main() {
 		LoginRequestRoute:   "http://localhost:4445/oauth2/auth/requests/login",
 		ConsentRequestRoute: "http://localhost:4445/oauth2/auth/requests/consent",
 	}
-	db := ConnectDB()
+	db := users.ConnectDB()
 
+	// Context we want handlers to have access to
 	envContext := &Env{hConf, db}
 
 	router := httprouter.New()
