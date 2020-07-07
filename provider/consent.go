@@ -14,7 +14,11 @@ import (
 // validates the consent request (it's not valid yet) and redirects us to the consent endpoint which we set with `CONSENT_URL=http://localhost:4445/consent`.
 func (ctx *AuthContext) GetConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Get the consent requerst id from the query.
-	challenge := r.URL.Query().Get("consent_challenge")
+	challenge, err := parseChallengeFromRequest(r, "consent_challenge")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	// Get info about current flow
 	params := url.Values{}
@@ -61,8 +65,11 @@ func (ctx *AuthContext) GetConsent(w http.ResponseWriter, r *http.Request, _ htt
 }
 
 func (ctx *AuthContext) PostConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	// Get the consent requerst id from the query.
-	challenge := r.URL.Query().Get("consent_challenge")
+	challenge, err := parseChallengeFromRequest(r, "consent_challenge")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	params := url.Values{}
 	params.Add("consent_challenge", challenge)

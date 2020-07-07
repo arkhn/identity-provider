@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory/common/env"
 
@@ -13,7 +13,7 @@ import (
 )
 
 // This store will be used to save user authentication
-var store = sessions.NewCookieStore([]byte("something-very-secret-keep-it-safe"))
+// var store = sessions.NewCookieStore([]byte("something-very-secret-keep-it-safe"))
 
 // The session is a unique session identifier
 const sessionName = "authentication"
@@ -24,10 +24,17 @@ func main() {
 		LoginRequestRoute:   "http://localhost:4445/oauth2/auth/requests/login",
 		ConsentRequestRoute: "http://localhost:4445/oauth2/auth/requests/consent",
 	}
-	db := users.NewDB()
+	db, err := users.NewDB()
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// Context we want handlers to have access to
-	envContext := &provider.AuthContext{hConf, db}
+	envContext := &provider.AuthContext{
+		HConf: hConf,
+		Db:    db,
+	}
 
 	router := httprouter.New()
 
@@ -41,6 +48,7 @@ func main() {
 	router.POST("/signup", envContext.HandleSignup)
 
 	// Start http server
-	log.Println("Listening on :" + env.Getenv("PORT", "3002"))
-	log.Fatal(http.ListenAndServe(":"+env.Getenv("PORT", "3002"), router))
+	serverUrl := fmt.Sprintf("localhost:%s", env.Getenv("PORT", "3002"))
+	fmt.Printf("Listening on: %s\n", serverUrl)
+	log.Fatal(http.ListenAndServe(serverUrl, router))
 }

@@ -3,6 +3,7 @@ package provider
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -35,6 +36,16 @@ func renderTemplate(w http.ResponseWriter, id string, d interface{}) bool {
 		return false
 	}
 	return true
+}
+
+func parseChallengeFromRequest(r *http.Request, key string) (string, error) {
+	challenge := r.URL.Query().Get(key)
+
+	if challenge == "" {
+		errMessage := fmt.Sprintf("Did not receive %s in the query.", key)
+		return "", errors.New(errMessage)
+	}
+	return challenge, nil
 }
 
 func putAndRedirect(url string, body interface{}, w http.ResponseWriter, r *http.Request, client *http.Client) {

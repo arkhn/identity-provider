@@ -31,7 +31,7 @@ type DB struct {
 	*gorm.DB
 }
 
-func NewDB() *DB {
+func NewDB() (*DB, error) {
 	databaseHost := os.Getenv("PROVIDER_DB_HOST")
 	port := os.Getenv("PROVIDER_DB_PORT")
 	username := os.Getenv("PROVIDER_DB_USER")
@@ -46,15 +46,14 @@ func NewDB() *DB {
 	db, err := gorm.Open("postgres", dbURI)
 
 	if err != nil {
-		fmt.Println("error", err)
-		panic(err)
+		return nil, err
 	}
 
 	// Migrate the schema
 	// TODO check doc about that
 	db.AutoMigrate(&User{})
 
-	return &DB{db}
+	return &DB{db}, nil
 }
 
 func (db *DB) FindUser(email string, password string) (*User, error) {

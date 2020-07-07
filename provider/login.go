@@ -12,7 +12,11 @@ import (
 )
 
 func (ctx *AuthContext) GetLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	challenge := r.URL.Query().Get("login_challenge")
+	challenge, err := parseChallengeFromRequest(r, "login_challenge")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	// Get info about current flow
 	params := url.Values{}
@@ -39,7 +43,11 @@ func (ctx *AuthContext) GetLogin(w http.ResponseWriter, r *http.Request, _ httpr
 }
 
 func (ctx *AuthContext) PostLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	challenge := r.URL.Query().Get("login_challenge")
+	challenge, err := parseChallengeFromRequest(r, "login_challenge")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	params := url.Values{}
 	params.Add("login_challenge", challenge)
