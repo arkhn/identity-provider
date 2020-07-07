@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"net/url"
 
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
@@ -33,6 +32,7 @@ func main() {
 
 	// Set up a router and some routes
 	http.HandleFunc("/", handleHome)
+	http.HandleFunc("/auth", handleAuth)
 	http.HandleFunc("/callback", handleCallback)
 
 	// Start http server
@@ -42,19 +42,13 @@ func main() {
 
 // handles request at /home - a small page that let's you know what you can do in this app. Usually the first.
 // page a user sees.
-func handleHome(w http.ResponseWriter, _ *http.Request) {
+func handleHome(w http.ResponseWriter, r *http.Request) {
+	renderTemplate(w, "home.html", nil)
+}
 
-	params := url.Values{}
-	params.Add("response_type", "code")
-	params.Add("client_id", "open-id-client")
-	params.Add("redirect_uri", "http://localhost:3003/callback")
-	params.Add("scope", "openid offline_access")
-	params.Add("state", state)
-	params.Add("aud", "http://localhost:3003")
-
-	req, _ := http.NewRequest("GET", "http://localhost:4444/oauth2/auth?"+params.Encode(), nil)
-
-	renderTemplate(w, "home.html", req.URL)
+func handleAuth(w http.ResponseWriter, r *http.Request) {
+	u := clientConfig.AuthCodeURL(state)
+	http.Redirect(w, r, u, http.StatusFound)
 }
 
 // Once the user has given their consent, we will hit this endpoint. Again,
