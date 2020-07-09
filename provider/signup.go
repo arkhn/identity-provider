@@ -9,7 +9,7 @@ import (
 	"main/users"
 )
 
-func (ctx *AuthContext) HandleSignup(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (ctx *Provider) HandleSignup(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	user := &users.User{}
 	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {

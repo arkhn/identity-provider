@@ -5,31 +5,26 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
 
 var clientConfig = oauth2.Config{
-	ClientID:     "open-id-client",
-	ClientSecret: "secret",
+	ClientID:     os.Getenv("CLIENT_ID"),
+	ClientSecret: os.Getenv("CLIENT_SECRET"),
 	Endpoint: oauth2.Endpoint{
-		AuthURL:  "http://localhost:4444/oauth2/auth",
-		TokenURL: "http://localhost:4444/oauth2/token",
+		AuthURL:  os.Getenv("AUTH_URL"),
+		TokenURL: os.Getenv("TOKEN_URL"),
 	},
-	RedirectURL: "http://localhost:3003/callback",
+	RedirectURL: os.Getenv("REDIRECT_URL"),
 	Scopes:      []string{"openid", "offline_access"},
 }
 
 var state = "demostatedemostatedemo"
 
 func main() {
-	var err error
-
-	if err != nil {
-		log.Fatalf("Unable to connect to the Hydra SDK because %s", err)
-	}
-
 	// Set up a router and some routes
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/auth", handleAuth)
@@ -47,8 +42,9 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAuth(w http.ResponseWriter, r *http.Request) {
-	u := clientConfig.AuthCodeURL(state)
-	http.Redirect(w, r, u, http.StatusFound)
+	url := clientConfig.AuthCodeURL(state)
+	log.Println(url)
+	http.Redirect(w, r, url, http.StatusFound)
 }
 
 // Once the user has given their consent, we will hit this endpoint. Again,

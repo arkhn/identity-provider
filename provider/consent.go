@@ -12,7 +12,7 @@ import (
 
 // After pressing "click here", the Authorize Code flow is performed and the user is redirected to Hydra. Next, Hydra
 // validates the consent request (it's not valid yet) and redirects us to the consent endpoint which we set with `CONSENT_URL=http://localhost:4445/consent`.
-func (ctx *AuthContext) GetConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (ctx *Provider) GetConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Get the consent requerst id from the query.
 	challenge, err := parseChallengeFromRequest(r, "consent_challenge")
 
@@ -64,7 +64,7 @@ func (ctx *AuthContext) GetConsent(w http.ResponseWriter, r *http.Request, _ htt
 	renderTemplate(w, "consent.html", fillTemplate)
 }
 
-func (ctx *AuthContext) PostConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (ctx *Provider) PostConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	challenge, err := parseChallengeFromRequest(r, "consent_challenge")
 
 	if err != nil {

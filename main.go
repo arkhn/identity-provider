@@ -31,7 +31,7 @@ func main() {
 	}
 
 	// Context we want handlers to have access to
-	envContext := &provider.AuthContext{
+	envContext := &provider.Provider{
 		HConf: hConf,
 		Db:    db,
 	}

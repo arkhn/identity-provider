@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (ctx *AuthContext) GetLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (ctx *Provider) GetLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	challenge, err := parseChallengeFromRequest(r, "login_challenge")
 
 	if err != nil {
@@ -42,7 +42,7 @@ func (ctx *AuthContext) GetLogin(w http.ResponseWriter, r *http.Request, _ httpr
 	renderTemplate(w, "login.html", challenge)
 }
 
-func (ctx *AuthContext) PostLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	challenge, err := parseChallengeFromRequest(r, "login_challenge")
 
 	if err != nil {

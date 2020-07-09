@@ -4,7 +4,7 @@ import (
 	"main/users"
 )
 
-type AuthContext struct {
+type Provider struct {
 	HConf *HydraConfig
 	Db    users.UserStore
 }
