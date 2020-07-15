@@ -72,7 +72,7 @@ func handleCallback(w http.ResponseWriter, r *http.Request) {
 
 // renderTemplate is a convenience helper for rendering templates.
 func renderTemplate(w http.ResponseWriter, id string, d interface{}) bool {
-	if t, err := template.New(id).ParseFiles("./templates/" + id); err != nil {
+	if t, err := template.New(id).ParseFiles("example-client/templates/" + id); err != nil {
 		http.Error(w, errors.Wrap(err, "Could not render template").Error(), http.StatusInternalServerError)
 		return false
 	} else if err := t.Execute(w, d); err != nil {
