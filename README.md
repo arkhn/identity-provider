@@ -62,20 +62,22 @@ Body: {
 
 ### Build and run the provider
 
+The provider expects a postgresql database to run (credentials for this DB are to be provided in .env).
+
+This DB should contain the users' credentials in 3 columns: email, name and password.
+
+For convenience, the provider exposes a `/signup` route you can POST to to register a new user. To do so, you have to POST a body with fields `name`, `password` and `email`.
+
+Building and running the provider can be done with
+
 ```
-cd provider/src
-go mod download
-go build -o provider
-./provider
+make run-provider
 ```
 
 ### Build and run the client
 
 ```
-cd example
-go mod download
-go build -o example
-./example
+make run-client
 ```
 
 ### Run through the example
