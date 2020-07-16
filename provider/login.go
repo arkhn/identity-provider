@@ -25,6 +25,8 @@ func (ctx *Provider) GetLogin(w http.ResponseWriter, r *http.Request, _ httprout
 	getUrl := fmt.Sprintf("%s?%s", ctx.HConf.LoginRequestRoute, params.Encode())
 	resp, err := http.Get(getUrl)
 
+	// TODO handle if resp is nil
+
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "Error while fetching login request info from hydra").Error(), http.StatusInternalServerError)
 	}
