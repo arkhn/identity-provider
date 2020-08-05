@@ -13,7 +13,7 @@ RUN chmod +x ./wait-for-postgres.sh
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/provider
 
 # final image
-FROM postgres
+FROM postgres:13-alpine
 
 WORKDIR /go
 
