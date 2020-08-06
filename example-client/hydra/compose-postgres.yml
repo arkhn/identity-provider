@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 services:
   hydra-migrate:
@@ -7,12 +7,16 @@ services:
       - DSN=postgres://hydra:secret@postgresd:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     command: migrate sql -e --yes
     restart: on-failure
+    networks:
+      - arkhn
 
   hydra:
     depends_on:
       - hydra-migrate
     environment:
       - DSN=postgres://hydra:secret@postgresd:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    networks:
+      - arkhn
 
   postgresd:
     image: postgres:9.6
@@ -22,3 +26,9 @@ services:
       - POSTGRES_USER=hydra
       - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=hydra
+    networks:
+      - arkhn
+
+networks:
+  arkhn:
+    name: arkhn

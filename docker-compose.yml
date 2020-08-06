@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  identity-provider:
+    image: arkhn/identity-provider:latest
+    ports:
+      - 3002:3002
+    env_file:
+      - .env.docker
+    depends_on:
+      - postgres
+    networks:
+      - arkhn
+
+  postgres:
+    image: postgres
+    container_name: postgres-idp
+    command: -p 55432
+    ports:
+        - 55432:55432
+    environment:
+      POSTGRES_USER: arkhn
+      POSTGRES_PASSWORD: provider
+      POSTGRES_DB: provider
+    volumes:
+        - identity-provider-data:/var/lib/postgresql/data
+    networks:
+      - arkhn
+
+volumes:
+  identity-provider-data:
+
+networks:
+  arkhn:
+    name: arkhn

@@ -1,8 +1,9 @@
-version: "3"
+version: "3.7"
 
 services:
   hydra:
     image: oryd/hydra:v1.5.2
+    container_name: hydra
     ports:
       - "4444:4444" # Public port
       - "4445:4445" # Admin port
@@ -18,4 +19,15 @@ services:
       - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
       - OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT=youReallyNeedToChangeThis
       - LOG_LEAK_SENSITIVE_VALUES=true
+      - CORS_ENABLED=true
+      - CORS_ALLOWED_ORIGINS=*
+      - ACCESS_TOKEN_LIFESPAN=10s
     restart: unless-stopped
+    volumes:
+      - ./.hydra.yml:/.hydra.yml
+    networks:
+      - arkhn
+
+networks:
+  arkhn:
+    name: arkhn
