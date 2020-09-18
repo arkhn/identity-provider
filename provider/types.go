@@ -2,6 +2,7 @@ package provider
 
 type HydraConfig struct {
 	LoginRequestRoute   string
+	LogoutRequestRoute  string
 	ConsentRequestRoute string
 }
 

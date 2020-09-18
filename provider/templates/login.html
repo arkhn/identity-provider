@@ -9,7 +9,7 @@
       Please sign in to proceed.
     </p>
 
-    <form action="/login?login_challenge={{.}}" method="POST">
+    <form action="{{.RootURL}}/login?login_challenge={{.ConsentChallenge}}" method="POST">
       <input type="text" name="email" />
       <input type="password" name="password" />
       <input type="submit" />

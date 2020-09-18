@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/ory/common/env"
 	"github.com/pkg/errors"
 )
 
@@ -39,7 +40,14 @@ func (ctx *Provider) GetLogin(w http.ResponseWriter, r *http.Request, _ httprout
 	log.Println(jsonResp)
 	// TODO do stuff with response
 
-	renderTemplate(w, "login.html", challenge)
+	fillTemplate := struct {
+		ConsentChallenge string
+		RootURL          string
+	}{
+		ConsentChallenge: challenge,
+		RootURL:          env.Getenv("ROOT_URL", ""),
+	}
+	renderTemplate(w, "login.html", fillTemplate)
 }
 
 func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -64,7 +72,6 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Println(user)
 
 	// // Let's create a session where we store the user id. We can ignore errors from the session store
 	// // as it will always return a session!
@@ -84,10 +91,10 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 
 	// TODO properly fill body
 	body := &BodyAcceptOAuth2Login{
-		Acr:         "..",
+		// Acr:         "..",
 		Remember:    false,
 		RememberFor: 3600,
-		Subject:     "bob",
+		Subject:     user.Email,
 	}
 
 	putAndRedirect(putUrl, body, w, r, http.DefaultClient)

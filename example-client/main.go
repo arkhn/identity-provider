@@ -43,7 +43,6 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 
 func handleAuth(w http.ResponseWriter, r *http.Request) {
 	url := clientConfig.AuthCodeURL(state)
-	log.Println(url)
 	http.Redirect(w, r, url, http.StatusFound)
 }
 

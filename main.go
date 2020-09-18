@@ -21,10 +21,12 @@ const sessionName = "authentication"
 func main() {
 
 	loginRequestRoute := env.Getenv("LOGIN_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/login")
+	// logoutRequestRoute := env.Getenv("LOGOUT_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/logout")
 	consentRequestRoute := env.Getenv("CONSENT_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/consent")
 
 	hConf := &provider.HydraConfig{
-		LoginRequestRoute:   loginRequestRoute,
+		LoginRequestRoute: loginRequestRoute,
+		// LogoutRequestRoute:  logoutRequestRoute,
 		ConsentRequestRoute: consentRequestRoute,
 	}
 	db, err := users.NewDB()
@@ -44,6 +46,8 @@ func main() {
 	// Set up a router and some routes
 	router.GET("/login", envContext.GetLogin)
 	router.POST("/login", envContext.PostLogin)
+	// router.GET("/logout", envContext.GetLogin)
+	// router.POST("/logout", envContext.PostLogin)
 	router.GET("/consent", envContext.GetConsent)
 	router.POST("/consent", envContext.PostConsent)
 
@@ -53,5 +57,6 @@ func main() {
 	// Start http server
 	serverUrl := fmt.Sprintf("0.0.0.0:%s", env.Getenv("PORT", "3002"))
 	fmt.Printf("Listening on: %s\n", serverUrl)
+	fmt.Printf("root url: %s\n", env.Getenv("ROOT_URL", "toto"))
 	log.Fatal(http.ListenAndServe(serverUrl, router))
 }

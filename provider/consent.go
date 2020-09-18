@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/ory/common/env"
 	"github.com/pkg/errors"
 )
 
@@ -52,13 +53,15 @@ func (ctx *Provider) GetConsent(w http.ResponseWriter, r *http.Request, _ httpro
 	// }
 
 	fillTemplate := struct {
-		ConsentRequestID string
+		ConsentChallenge string
 		ClientID         string
 		RequestedScopes  []string
+		RootURL          string
 	}{
-		ConsentRequestID: challenge,
+		ConsentChallenge: challenge,
 		ClientID:         "app id", // TODO
 		RequestedScopes:  requestedScopes,
+		RootURL:          env.Getenv("ROOT_URL", ""),
 	}
 
 	renderTemplate(w, "consent.html", fillTemplate)
@@ -92,8 +95,8 @@ func (ctx *Provider) PostConsent(w http.ResponseWriter, r *http.Request, _ httpr
 	// TODO use session to add info about the current user
 	session := SessionInfo{
 		IdToken: IdTokenClaims{
-			Name:  "bob",
-			Email: "bob@arkhn.com",
+			Name:  "admin",
+			Email: "admin@arkhn.com",
 		},
 	}
 

@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   hydra:
-    image: oryd/hydra:v1.5.2
+    image: oryd/hydra:v1.7.4
     container_name: hydra
     ports:
       - "4444:4444" # Public port
@@ -13,7 +13,7 @@ services:
       - URLS_SELF_ISSUER=http://localhost:4444
       - URLS_CONSENT=http://localhost:3002/consent
       - URLS_LOGIN=http://localhost:3002/login
-      - URLS_LOGOUT=http://localhost:3002/logout
+      # - URLS_LOGOUT=http://localhost:3002/logout
       - DSN=memory
       - SECRETS_SYSTEM=youReallyNeedToChangeThis
       - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
@@ -21,7 +21,7 @@ services:
       - LOG_LEAK_SENSITIVE_VALUES=true
       - CORS_ENABLED=true
       - CORS_ALLOWED_ORIGINS=*
-      - ACCESS_TOKEN_LIFESPAN=10s
+      # - ACCESS_TOKEN_LIFESPAN=10s
     restart: unless-stopped
     volumes:
       - ./.hydra.yml:/.hydra.yml
