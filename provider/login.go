@@ -1,9 +1,7 @@
 package provider
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -24,21 +22,21 @@ func (ctx *Provider) GetLogin(w http.ResponseWriter, r *http.Request, _ httprout
 	params.Add("login_challenge", challenge)
 
 	getUrl := fmt.Sprintf("%s?%s", ctx.HConf.LoginRequestRoute, params.Encode())
-	resp, err := http.Get(getUrl)
+	_, err = http.Get(getUrl)
 
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "Error while fetching login request info from hydra").Error(), http.StatusInternalServerError)
 	}
 
-	var jsonResp interface{}
-	err = json.NewDecoder(resp.Body).Decode(&jsonResp)
-
-	if err != nil {
-		http.Error(w, errors.Wrap(err, "Could not parse login request info").Error(), http.StatusInternalServerError)
-	}
-
-	log.Println(jsonResp)
 	// TODO do stuff with response
+	// var jsonResp interface{}
+	// err = json.NewDecoder(resp.Body).Decode(&jsonResp)
+
+	// if err != nil {
+	// 	http.Error(w, errors.Wrap(err, "Could not parse login request info").Error(), http.StatusInternalServerError)
+	// }
+
+	// log.Println(jsonResp)
 
 	fillTemplate := struct {
 		ConsentChallenge string
