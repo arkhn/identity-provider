@@ -12,9 +12,13 @@ func main() {
 	username := os.Getenv("PROVIDER_DB_USER")
 	password := os.Getenv("PROVIDER_DB_PASSWORD")
 	databaseName := os.Getenv("PROVIDER_DB_NAME")
-	superuserPassword := os.Getenv("SUPERUSER_PASSWORD")
 
-	if superuserPassword == "" {
+	superuserEmail, ok := os.LookupEnv("SUPERUSER_EMAIL")
+	if !ok {
+		superuserEmail = "admin@arkhn.com"
+	}
+	superuserPassword, ok := os.LookupEnv("SUPERUSER_PASSWORD")
+	if !ok {
 		panic("SUPERUSER_PASSWORD env variable is required")
 	}
 
@@ -25,7 +29,7 @@ func main() {
 
 	user := &users.User{
 		Name:     "admin",
-		Email:    "admin@arkhn.com",
+		Email:    superuserEmail,
 		Password: superuserPassword,
 	}
 
@@ -35,4 +39,5 @@ func main() {
 	}
 
 	fmt.Printf("Created user %s with email %s\n", createdUser.Name, createdUser.Email)
+	os.Exit(0)
 }
