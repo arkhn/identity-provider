@@ -1,11 +1,8 @@
 package users
 
-// TODO should we move user management outside the main package?
-
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -31,12 +28,7 @@ type DB struct {
 	*gorm.DB
 }
 
-func NewDB() (*DB, error) {
-	databaseHost := os.Getenv("PROVIDER_DB_HOST")
-	port := os.Getenv("PROVIDER_DB_PORT")
-	username := os.Getenv("PROVIDER_DB_USER")
-	password := os.Getenv("PROVIDER_DB_PASSWORD")
-	databaseName := os.Getenv("PROVIDER_DB_NAME")
+func NewDB(databaseHost string, port string, username string, password string, databaseName string) (*DB, error) {
 
 	dbURI := fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",

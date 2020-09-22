@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory/common/env"
@@ -23,11 +24,17 @@ func main() {
 	loginRequestRoute := env.Getenv("LOGIN_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/login")
 	consentRequestRoute := env.Getenv("CONSENT_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/consent")
 
+	databaseHost := os.Getenv("PROVIDER_DB_HOST")
+	port := os.Getenv("PROVIDER_DB_PORT")
+	username := os.Getenv("PROVIDER_DB_USER")
+	password := os.Getenv("PROVIDER_DB_PASSWORD")
+	databaseName := os.Getenv("PROVIDER_DB_NAME")
+
 	hConf := &provider.HydraConfig{
 		LoginRequestRoute:   loginRequestRoute,
 		ConsentRequestRoute: consentRequestRoute,
 	}
-	db, err := users.NewDB()
+	db, err := users.NewDB(databaseHost, port, username, password, databaseName)
 
 	if err != nil {
 		log.Fatal(err.Error())
