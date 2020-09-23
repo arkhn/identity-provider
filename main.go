@@ -54,8 +54,8 @@ func main() {
 	router.GET("/consent", envContext.GetConsent)
 	router.POST("/consent", envContext.PostConsent)
 
-	// TODO
-	router.POST("/signup", envContext.HandleSignup)
+	router.GET("/signup", envContext.GetSignup)
+	router.POST("/signup", envContext.PostSignup)
 
 	// Start http server
 	serverUrl := fmt.Sprintf("0.0.0.0:%s", env.Getenv("PORT", "3002"))
