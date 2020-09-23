@@ -34,6 +34,10 @@ func (ctx *Provider) GetConsent(w http.ResponseWriter, r *http.Request, _ httpro
 
 	jsonResp := struct {
 		RequestedScopes []string `json:"requested_scope"`
+		Client          struct {
+			ClientID   string `json:"client_id"`
+			ClientName string `json:"client_name"`
+		} `json:"client"`
 	}{}
 	err = json.NewDecoder(resp.Body).Decode(&jsonResp)
 
@@ -42,29 +46,38 @@ func (ctx *Provider) GetConsent(w http.ResponseWriter, r *http.Request, _ httpro
 	}
 
 	requestedScopes := jsonResp.RequestedScopes
-	// TODO do stuff with response
+	clientID := jsonResp.Client.ClientID
 
-	// This helper checks if the user is already authenticated. If not, we
-	// redirect them to the login endpoint.
-	// user := authenticated(r)
-	// if user == "" {
-	// 	http.Redirect(w, r, "/login?consent="+consentRequestID, http.StatusFound)
-	// 	return
-	// }
+	// NOTE we'll skip the consent phase of the flow for now because:
+	// - we don't really use scopes for now
+	// - we expect all the scopes to be accepted for each client
+	// - we only use first party clients
+	if true { // TODO find a way to determine which clients are first party
+		ctx.grantScopes(requestedScopes, challenge, w, r)
+	} else {
+		// This helper checks if the user is already authenticated. If not, we
+		// redirect them to the login endpoint.
+		// user := authenticated(r)
+		// if user == "" {
+		// 	http.Redirect(w, r, "/login?consent="+consentRequestID, http.StatusFound)
+		// 	return
+		// }
 
-	fillTemplate := struct {
-		ConsentChallenge string
-		ClientID         string
-		RequestedScopes  []string
-		RootURL          string
-	}{
-		ConsentChallenge: challenge,
-		ClientID:         "app id", // TODO
-		RequestedScopes:  requestedScopes,
-		RootURL:          env.Getenv("ROOT_URL", ""),
+		fillTemplate := struct {
+			ConsentChallenge string
+			ClientID         string
+			RequestedScopes  []string
+			RootURL          string
+		}{
+			ConsentChallenge: challenge,
+			ClientID:         clientID,
+			RequestedScopes:  requestedScopes,
+			RootURL:          env.Getenv("ROOT_URL", ""),
+		}
+
+		renderTemplate(w, "consent.html", fillTemplate)
 	}
 
-	renderTemplate(w, "consent.html", fillTemplate)
 }
 
 func (ctx *Provider) PostConsent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -73,9 +86,6 @@ func (ctx *Provider) PostConsent(w http.ResponseWriter, r *http.Request, _ httpr
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-	params := url.Values{}
-	params.Add("consent_challenge", challenge)
 
 	// Parse the HTTP form - required by Go.
 	if err := r.ParseForm(); err != nil {
@@ -89,6 +99,13 @@ func (ctx *Provider) PostConsent(w http.ResponseWriter, r *http.Request, _ httpr
 		// And add each scope to the list of granted scopes.
 		grantedScopes = append(grantedScopes, key)
 	}
+
+	ctx.grantScopes(grantedScopes, challenge, w, r)
+}
+
+func (ctx *Provider) grantScopes(grantedScopes []string, consentChallenge string, w http.ResponseWriter, r *http.Request) {
+	params := url.Values{}
+	params.Add("consent_challenge", consentChallenge)
 
 	putUrl := fmt.Sprintf("%s/accept?%s", ctx.HConf.ConsentRequestRoute, params.Encode())
 
@@ -108,5 +125,6 @@ func (ctx *Provider) PostConsent(w http.ResponseWriter, r *http.Request, _ httpr
 		Session:                  session,
 	}
 
-	putAndRedirect(putUrl, body, w, r, http.DefaultClient)
+	redirectUrl := putAccept(putUrl, body, http.DefaultClient)
+	http.Redirect(w, r, redirectUrl, http.StatusFound)
 }

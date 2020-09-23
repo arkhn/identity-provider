@@ -82,9 +82,6 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 	// 	return
 	// }
 
-	// Redirect the user back to the consent endpoint. In a normal app, you would probably
-	// add some logic here that is triggered when the user actually performs authentication and is not
-	// part of the consent flow.
 	putUrl := fmt.Sprintf("%s/accept?%s", ctx.HConf.LoginRequestRoute, params.Encode())
 
 	// TODO properly fill body
@@ -95,5 +92,6 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 		Subject:     user.Email,
 	}
 
-	putAndRedirect(putUrl, body, w, r, http.DefaultClient)
+	redirectUrl := putAccept(putUrl, body, http.DefaultClient)
+	http.Redirect(w, r, redirectUrl, http.StatusFound)
 }

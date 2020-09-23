@@ -48,7 +48,7 @@ func parseChallengeFromRequest(r *http.Request, key string) (string, error) {
 	return challenge, nil
 }
 
-func putAndRedirect(url string, body interface{}, w http.ResponseWriter, r *http.Request, client *http.Client) {
+func putAccept(url string, body interface{}, client *http.Client) string {
 	jsonBody, _ := json.Marshal(body)
 
 	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(jsonBody))
@@ -66,5 +66,5 @@ func putAndRedirect(url string, body interface{}, w http.ResponseWriter, r *http
 	jsonResp := RedirectResp{}
 	json.Unmarshal(b, &jsonResp)
 
-	http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
+	return jsonResp.RedirectTo
 }
