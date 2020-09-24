@@ -142,7 +142,10 @@ func (ctx *Provider) grantScopes(grantedScopes []string, consentChallenge string
 	}
 
 	jsonResp := RedirectResp{}
-	json.Unmarshal(b, &jsonResp)
+	err = json.Unmarshal(b, &jsonResp)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting consent request").Error(), http.StatusInternalServerError)
+	}
 
 	http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
 }

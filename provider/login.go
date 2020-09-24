@@ -110,7 +110,10 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 	}
 
 	jsonResp := RedirectResp{}
-	json.Unmarshal(b, &jsonResp)
+	err = json.Unmarshal(b, &jsonResp)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting login request").Error(), http.StatusInternalServerError)
+	}
 
 	http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
 }
