@@ -10,7 +10,7 @@
       on your behalf. The application wants access to:
     </p>
     <form
-      action="/consent?consent_challenge={{.ConsentRequestID}}"
+      action="{{.RootURL}}/consent?consent_challenge={{.ConsentChallenge}}"
       method="POST"
     >
       <ul>

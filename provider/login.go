@@ -1,13 +1,15 @@
 package provider
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/ory/common/env"
 	"github.com/pkg/errors"
 )
 
@@ -23,23 +25,30 @@ func (ctx *Provider) GetLogin(w http.ResponseWriter, r *http.Request, _ httprout
 	params.Add("login_challenge", challenge)
 
 	getUrl := fmt.Sprintf("%s?%s", ctx.HConf.LoginRequestRoute, params.Encode())
-	resp, err := http.Get(getUrl)
+	_, err = http.Get(getUrl)
 
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "Error while fetching login request info from hydra").Error(), http.StatusInternalServerError)
 	}
 
-	var jsonResp interface{}
-	err = json.NewDecoder(resp.Body).Decode(&jsonResp)
-
-	if err != nil {
-		http.Error(w, errors.Wrap(err, "Could not parse login request info").Error(), http.StatusInternalServerError)
-	}
-
-	log.Println(jsonResp)
 	// TODO do stuff with response
+	// var jsonResp interface{}
+	// err = json.NewDecoder(resp.Body).Decode(&jsonResp)
 
-	renderTemplate(w, "login.html", challenge)
+	// if err != nil {
+	// 	http.Error(w, errors.Wrap(err, "Could not parse login request info").Error(), http.StatusInternalServerError)
+	// }
+
+	// log.Println(jsonResp)
+
+	fillTemplate := struct {
+		ConsentChallenge string
+		RootURL          string
+	}{
+		ConsentChallenge: challenge,
+		RootURL:          env.Getenv("ROOT_URL", ""),
+	}
+	renderTemplate(w, "login.html", fillTemplate)
 }
 
 func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -64,7 +73,6 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Println(user)
 
 	// // Let's create a session where we store the user id. We can ignore errors from the session store
 	// // as it will always return a session!
@@ -77,18 +85,35 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 	// 	return
 	// }
 
-	// Redirect the user back to the consent endpoint. In a normal app, you would probably
-	// add some logic here that is triggered when the user actually performs authentication and is not
-	// part of the consent flow.
 	putUrl := fmt.Sprintf("%s/accept?%s", ctx.HConf.LoginRequestRoute, params.Encode())
 
 	// TODO properly fill body
 	body := &BodyAcceptOAuth2Login{
-		Acr:         "..",
+		// Acr:         "..",
 		Remember:    false,
 		RememberFor: 3600,
-		Subject:     "bob",
+		Subject:     user.Email,
 	}
 
-	putAndRedirect(putUrl, body, w, r, http.DefaultClient)
+	jsonBody, _ := json.Marshal(body)
+
+	req, _ := http.NewRequest("PUT", putUrl, bytes.NewBuffer(jsonBody))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting login request").Error(), http.StatusInternalServerError)
+	}
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting login request").Error(), http.StatusInternalServerError)
+	}
+
+	jsonResp := RedirectResp{}
+	err = json.Unmarshal(b, &jsonResp)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting login request").Error(), http.StatusInternalServerError)
+	}
+
+	http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
 }

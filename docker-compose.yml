@@ -3,6 +3,9 @@ version: "3.7"
 services:
   identity-provider:
     image: arkhn/identity-provider:latest
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
     ports:
       - 3002:3002
     env_file:
