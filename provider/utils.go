@@ -1,12 +1,8 @@
 package provider
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"html/template"
-	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -46,25 +42,4 @@ func parseChallengeFromRequest(r *http.Request, key string) (string, error) {
 		return "", errors.New(errMessage)
 	}
 	return challenge, nil
-}
-
-func putAccept(url string, body interface{}, client *http.Client) string {
-	jsonBody, _ := json.Marshal(body)
-
-	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(jsonBody))
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	jsonResp := RedirectResp{}
-	json.Unmarshal(b, &jsonResp)
-
-	return jsonResp.RedirectTo
 }

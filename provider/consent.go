@@ -1,8 +1,10 @@
 package provider
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -125,6 +127,22 @@ func (ctx *Provider) grantScopes(grantedScopes []string, consentChallenge string
 		Session:                  session,
 	}
 
-	redirectUrl := putAccept(putUrl, body, http.DefaultClient)
-	http.Redirect(w, r, redirectUrl, http.StatusFound)
+	jsonBody, _ := json.Marshal(body)
+
+	req, _ := http.NewRequest("PUT", putUrl, bytes.NewBuffer(jsonBody))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting consent request").Error(), http.StatusInternalServerError)
+	}
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting consent request").Error(), http.StatusInternalServerError)
+	}
+
+	jsonResp := RedirectResp{}
+	json.Unmarshal(b, &jsonResp)
+
+	http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
 }
