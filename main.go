@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory/common/env"
@@ -24,12 +25,18 @@ func main() {
 	// logoutRequestRoute := env.Getenv("LOGOUT_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/logout")
 	consentRequestRoute := env.Getenv("CONSENT_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/consent")
 
+	databaseHost := os.Getenv("PROVIDER_DB_HOST")
+	port := os.Getenv("PROVIDER_DB_PORT")
+	username := os.Getenv("PROVIDER_DB_USER")
+	password := os.Getenv("PROVIDER_DB_PASSWORD")
+	databaseName := os.Getenv("PROVIDER_DB_NAME")
+
 	hConf := &provider.HydraConfig{
 		LoginRequestRoute: loginRequestRoute,
 		// LogoutRequestRoute:  logoutRequestRoute,
 		ConsentRequestRoute: consentRequestRoute,
 	}
-	db, err := users.NewDB()
+	db, err := users.NewDB(databaseHost, port, username, password, databaseName)
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -51,8 +58,8 @@ func main() {
 	router.GET("/consent", envContext.GetConsent)
 	router.POST("/consent", envContext.PostConsent)
 
-	// TODO
-	router.POST("/signup", envContext.HandleSignup)
+	router.GET("/signup", envContext.GetSignup)
+	router.POST("/signup", envContext.PostSignup)
 
 	// Start http server
 	serverUrl := fmt.Sprintf("0.0.0.0:%s", env.Getenv("PORT", "3002"))
