@@ -57,6 +57,5 @@ func main() {
 	// Start http server
 	serverUrl := fmt.Sprintf("0.0.0.0:%s", env.Getenv("PORT", "3002"))
 	fmt.Printf("Listening on: %s\n", serverUrl)
-	fmt.Printf("root url: %s\n", env.Getenv("ROOT_URL", ""))
 	log.Fatal(http.ListenAndServe(serverUrl, router))
 }
