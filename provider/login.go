@@ -1,7 +1,10 @@
 package provider
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -82,9 +85,6 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 	// 	return
 	// }
 
-	// Redirect the user back to the consent endpoint. In a normal app, you would probably
-	// add some logic here that is triggered when the user actually performs authentication and is not
-	// part of the consent flow.
 	putUrl := fmt.Sprintf("%s/accept?%s", ctx.HConf.LoginRequestRoute, params.Encode())
 
 	// TODO properly fill body
@@ -95,5 +95,25 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 		Subject:     user.Email,
 	}
 
-	putAndRedirect(putUrl, body, w, r, http.DefaultClient)
+	jsonBody, _ := json.Marshal(body)
+
+	req, _ := http.NewRequest("PUT", putUrl, bytes.NewBuffer(jsonBody))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting login request").Error(), http.StatusInternalServerError)
+	}
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting login request").Error(), http.StatusInternalServerError)
+	}
+
+	jsonResp := RedirectResp{}
+	err = json.Unmarshal(b, &jsonResp)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while accepting login request").Error(), http.StatusInternalServerError)
+	}
+
+	http.Redirect(w, r, jsonResp.RedirectTo, http.StatusFound)
 }
