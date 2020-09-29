@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/ory/common/env"
 
 	"main/provider"
 	"main/users"
@@ -21,14 +20,14 @@ const sessionName = "authentication"
 
 func main() {
 
-	loginRequestRoute := env.Getenv("LOGIN_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/login")
-	// logoutRequestRoute := env.Getenv("LOGOUT_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/logout")
-	consentRequestRoute := env.Getenv("CONSENT_REQUEST_ROUTE", "http://localhost:4445/oauth2/auth/requests/consent")
+	loginRequestRoute := os.Getenv("LOGIN_REQUEST_ROUTE")
+	// logoutRequestRoute := os.Getenv("LOGOUT_REQUEST_ROUTE")
+	consentRequestRoute := os.Getenv("CONSENT_REQUEST_ROUTE")
 
 	databaseHost := os.Getenv("PROVIDER_DB_HOST")
-	port := os.Getenv("PROVIDER_DB_PORT")
-	username := os.Getenv("PROVIDER_DB_USER")
-	password := os.Getenv("PROVIDER_DB_PASSWORD")
+	databasePort := os.Getenv("PROVIDER_DB_PORT")
+	databaseUsername := os.Getenv("PROVIDER_DB_USER")
+	databasePassword := os.Getenv("PROVIDER_DB_PASSWORD")
 	databaseName := os.Getenv("PROVIDER_DB_NAME")
 
 	hConf := &provider.HydraConfig{
@@ -36,7 +35,7 @@ func main() {
 		// LogoutRequestRoute:  logoutRequestRoute,
 		ConsentRequestRoute: consentRequestRoute,
 	}
-	db, err := users.NewDB(databaseHost, port, username, password, databaseName)
+	db, err := users.NewDB(databaseHost, databasePort, databaseUsername, databasePassword, databaseName)
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -62,7 +61,7 @@ func main() {
 	router.POST("/signup", envContext.PostSignup)
 
 	// Start http server
-	serverUrl := fmt.Sprintf("0.0.0.0:%s", env.Getenv("PORT", "3002"))
+	serverUrl := fmt.Sprintf("0.0.0.0:%s", os.Getenv("PORT"))
 	fmt.Printf("Listening on: %s\n", serverUrl)
 	log.Fatal(http.ListenAndServe(serverUrl, router))
 }
