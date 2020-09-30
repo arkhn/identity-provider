@@ -26,29 +26,35 @@ func main() {
 		Schemes: []string{clientURL.Scheme}, Host: clientURL.Host, BasePath: clientURL.Path,
 	})
 
-	jsonFile, err := os.Open(clientConfigFile)
-	if err != nil {
-		panic(err)
-	}
-	byteValue, err := ioutil.ReadAll(jsonFile)
+	byteValue, err := ioutil.ReadFile(clientConfigFile)
 	if err != nil {
 		panic(err)
 	}
 
 	userConfigs := []models.OAuth2Client{}
-	json.Unmarshal(byteValue, &userConfigs)
+	err = json.Unmarshal(byteValue, &userConfigs)
+	if err != nil {
+		panic(err)
+	}
 
 	for _, userConfig := range userConfigs {
-		registerClient(hydra, userConfig)
+		created, err := registerClient(hydra, userConfig)
+		if err != nil {
+			log.Println(err)
+		} else {
+			fmt.Printf("Created client: %v\n", created)
+		}
 	}
 }
 
-func registerClient(hydra *client.OryHydra, cc models.OAuth2Client) {
+func registerClient(hydra *client.OryHydra, cc models.OAuth2Client) (*admin.CreateOAuth2ClientCreated, error) {
 
 	// Delete previously existing client
-	_, err := hydra.Admin.DeleteOAuth2Client(&admin.DeleteOAuth2ClientParams{ID: cc.ClientID, Context: context.Background()})
+	_, err := hydra.Admin.DeleteOAuth2Client(
+		&admin.DeleteOAuth2ClientParams{ID: cc.ClientID, Context: context.Background()},
+	)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
 	// Create a new client
@@ -56,11 +62,10 @@ func registerClient(hydra *client.OryHydra, cc models.OAuth2Client) {
 	if err != nil {
 		switch e := err.(type) {
 		case *admin.CreateOAuth2ClientConflict:
-			fmt.Printf("Client %s already exists: %s\n", cc.ClientID, e.GetPayload().ErrorDescription)
+			return nil, fmt.Errorf("Client %s already exists: %s\n", cc.ClientID, e.GetPayload().ErrorDescription)
 		default:
-			log.Println(err)
+			return nil, err
 		}
-	} else {
-		fmt.Printf("Created client: %s\n", created)
 	}
+	return created, nil
 }
