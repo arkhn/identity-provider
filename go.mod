@@ -9,6 +9,8 @@ require (
 	github.com/jonboulle/clockwork v0.2.0 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/ory/common v0.4.0
+	github.com/ory/hydra-client-go v1.7.4
+	github.com/ory/x v0.0.150
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

@@ -1,0 +1,22 @@
+FROM golang:1.14-stretch as base
+
+RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
+
+WORKDIR /build
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+COPY register-clients register-clients
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/register-clients register-clients/register-clients.go
+
+# final image
+FROM scratch
+
+COPY --from=base /etc/ssl/certs /etc/ssl/certs
+COPY --from=base /build/bin/register-clients ./bin/register-clients
+
+ENTRYPOINT ["./bin/register-clients"]
