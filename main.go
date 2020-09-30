@@ -21,7 +21,6 @@ const sessionName = "authentication"
 func main() {
 
 	loginRequestRoute := os.Getenv("LOGIN_REQUEST_ROUTE")
-	// logoutRequestRoute := os.Getenv("LOGOUT_REQUEST_ROUTE")
 	consentRequestRoute := os.Getenv("CONSENT_REQUEST_ROUTE")
 
 	databaseHost := os.Getenv("PROVIDER_DB_HOST")
@@ -31,8 +30,7 @@ func main() {
 	databaseName := os.Getenv("PROVIDER_DB_NAME")
 
 	hConf := &provider.HydraConfig{
-		LoginRequestRoute: loginRequestRoute,
-		// LogoutRequestRoute:  logoutRequestRoute,
+		LoginRequestRoute:   loginRequestRoute,
 		ConsentRequestRoute: consentRequestRoute,
 	}
 	db, err := users.NewDB(databaseHost, databasePort, databaseUsername, databasePassword, databaseName)
@@ -52,8 +50,6 @@ func main() {
 	// Set up a router and some routes
 	router.GET("/login", envContext.GetLogin)
 	router.POST("/login", envContext.PostLogin)
-	// router.GET("/logout", envContext.GetLogin)
-	// router.POST("/logout", envContext.PostLogin)
 	router.GET("/consent", envContext.GetConsent)
 	router.POST("/consent", envContext.PostConsent)
 
