@@ -22,6 +22,8 @@ import (
 // 	}
 // }
 
+const sessionName = "authentication"
+
 // renderTemplate is a convenience helper for rendering templates.
 func renderTemplate(w http.ResponseWriter, id string, d interface{}) bool {
 	if t, err := template.New(id).ParseFiles("provider/templates/" + id); err != nil {

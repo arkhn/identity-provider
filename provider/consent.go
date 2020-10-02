@@ -57,14 +57,6 @@ func (ctx *Provider) GetConsent(w http.ResponseWriter, r *http.Request, _ httpro
 	if true { // TODO find a way to determine which clients are first party
 		ctx.grantScopes(requestedScopes, challenge, w, r)
 	} else {
-		// This helper checks if the user is already authenticated. If not, we
-		// redirect them to the login endpoint.
-		// user := authenticated(r)
-		// if user == "" {
-		// 	http.Redirect(w, r, "/login?consent="+consentRequestID, http.StatusFound)
-		// 	return
-		// }
-
 		fillTemplate := struct {
 			ConsentChallenge string
 			ClientID         string
@@ -111,20 +103,30 @@ func (ctx *Provider) grantScopes(grantedScopes []string, consentChallenge string
 
 	putUrl := fmt.Sprintf("%s/accept?%s", ctx.HConf.ConsentRequestRoute, params.Encode())
 
-	// TODO use session to add info about the current user
-	session := SessionInfo{
+	// Use cookies to add info about the current user
+	session, err := ctx.Store.Get(r, sessionName)
+	if err != nil {
+		http.Error(w, errors.Wrap(err, "Error while reading cookies store").Error(), http.StatusInternalServerError)
+	}
+	userName, userNameOk := session.Values["userName"]
+	userEmail, userEmailOk := session.Values["userEmail"]
+	if !(userNameOk && userEmailOk) {
+		http.Error(w, errors.Wrap(err, "Error while reading from cookie store").Error(), http.StatusInternalServerError)
+	}
+
+	sessionInfo := SessionInfo{
 		IdToken: IdTokenClaims{
-			Name:  "admin",
-			Email: "admin@arkhn.com",
+			Name:  userName.(string),
+			Email: userEmail.(string),
 		},
 	}
 
 	body := &BodyAcceptOAuth2Consent{
-		GrantScope:               grantedScopes,
-		GrantAccessTokenAudience: []string{"http://localhost:3002"}, // TODO
-		Remember:                 false,
-		RememberFor:              3600,
-		Session:                  session,
+		GrantScope: grantedScopes,
+		// GrantAccessTokenAudience: []string{"http://localhost:3002"}, // TODO
+		Remember: false,
+		// RememberFor: 3600,
+		Session: sessionInfo,
 	}
 
 	jsonBody, _ := json.Marshal(body)

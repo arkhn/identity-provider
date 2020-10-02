@@ -6,17 +6,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 
 	"main/provider"
 	"main/users"
 )
-
-// This store will be used to save user authentication
-// var store = sessions.NewCookieStore([]byte("something-very-secret-keep-it-safe"))
-
-// The session is a unique session identifier
-const sessionName = "authentication"
 
 func main() {
 
@@ -28,6 +23,8 @@ func main() {
 	databaseUsername := os.Getenv("PROVIDER_DB_USER")
 	databasePassword := os.Getenv("PROVIDER_DB_PASSWORD")
 	databaseName := os.Getenv("PROVIDER_DB_NAME")
+
+	storeSecret := os.Getenv("STORE_SECRET")
 
 	hConf := &provider.HydraConfig{
 		LoginRequestRoute:   loginRequestRoute,
@@ -43,6 +40,7 @@ func main() {
 	envContext := &provider.Provider{
 		HConf: hConf,
 		Db:    db,
+		Store: sessions.NewCookieStore([]byte(storeSecret)),
 	}
 
 	router := httprouter.New()

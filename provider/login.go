@@ -74,16 +74,16 @@ func (ctx *Provider) PostLogin(w http.ResponseWriter, r *http.Request, _ httprou
 		return
 	}
 
-	// // Let's create a session where we store the user id. We can ignore errors from the session store
-	// // as it will always return a session!
-	// session, _ := store.Get(r, sessionName)
-	// session.Values["user"] = "buzz-lightyear"
-
-	// // Store the session in the cookie
-	// if err := store.Save(r, w, session); err != nil {
-	// 	http.Error(w, errors.Wrap(err, "Could not persist cookie").Error(), http.StatusBadRequest)
-	// 	return
-	// }
+	// Let's create a session where we store the user id. We can ignore errors from the session store
+	// as it will always return a session!
+	session, _ := ctx.Store.Get(r, sessionName)
+	session.Values["userName"] = user.Name
+	session.Values["userEmail"] = user.Email
+	// Store the session in the cookies
+	if err := ctx.Store.Save(r, w, session); err != nil {
+		http.Error(w, errors.Wrap(err, "Could not persist cookies").Error(), http.StatusBadRequest)
+		return
+	}
 
 	putUrl := fmt.Sprintf("%s/accept?%s", ctx.HConf.LoginRequestRoute, params.Encode())
 
