@@ -15,6 +15,18 @@ import (
 	"github.com/ory/hydra-client-go/models"
 )
 
+// transporter is a custom http.Transport which intercepts HTTP requests
+// in order to set the X-Forwarded-Proto header which hydra needs when fake TLS
+// termination is enabled.
+type transporter struct {
+	*http.Transport
+}
+
+func (t *transporter) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("X-Forwarded-Proto", "https")
+	return t.Transport.RoundTrip(req)
+}
+
 func main() {
 	clientConfigFile := os.Getenv("CLIENTS_FILE")
 	hydraURL := os.Getenv("HYDRA_URL")
@@ -46,15 +58,6 @@ func main() {
 			fmt.Printf("Created client: %v\n", created)
 		}
 	}
-}
-
-type transporter struct {
-	*http.Transport
-}
-
-func (t *transporter) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("X-Forwarded-Proto", "https")
-	return t.Transport.RoundTrip(req)
 }
 
 func registerClient(hydra *client.OryHydra, cc models.OAuth2Client) (*admin.CreateOAuth2ClientCreated, error) {
