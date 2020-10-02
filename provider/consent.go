@@ -108,8 +108,11 @@ func (ctx *Provider) grantScopes(grantedScopes []string, consentChallenge string
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "Error while reading cookies store").Error(), http.StatusInternalServerError)
 	}
-	userName, _ := session.Values["userName"]
-	userEmail, _ := session.Values["userEmail"]
+	userName, userNameOk := session.Values["userName"]
+	userEmail, userEmailOk := session.Values["userEmail"]
+	if !(userNameOk && userEmailOk) {
+		http.Error(w, errors.Wrap(err, "Error while reading from cookie store").Error(), http.StatusInternalServerError)
+	}
 
 	sessionInfo := SessionInfo{
 		IdToken: IdTokenClaims{
