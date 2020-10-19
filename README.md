@@ -34,7 +34,7 @@ The client serves 2 routes:
 - First, we need to launch the Hydra containers:
 
 ```
-cd example/hydra
+cd hydra
 docker-compose -f compose-hydra.yml -f compose-postgres.yml up --build
 ```
 
