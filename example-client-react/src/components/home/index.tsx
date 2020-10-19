@@ -77,7 +77,8 @@ const Home = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <p>Connected with token starting with {accessToken.substring(0, 15)}</p>
+        <p>Connected with token:</p>
+        <p>{accessToken}</p>
         <Button onClick={logout}>Click here to logout</Button>
       </header>
     </div>

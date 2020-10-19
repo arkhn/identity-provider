@@ -7,10 +7,6 @@ import Home from "./components/home";
 import { refreshToken, removeTokens } from "./oauth/tokenManager";
 import { ACCESS_TOKEN_STORAGE_KEY, TOKEN_URL } from "./constants";
 
-const redirectToLogin = () => {
-  removeTokens();
-};
-
 // Set axios interceptor
 axios.interceptors.request.use((config) => {
   const accessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
@@ -30,7 +26,7 @@ axios.interceptors.response.use(
       error.response.status === 401 &&
       originalRequest.url.startsWith(TOKEN_URL)
     ) {
-      redirectToLogin();
+      removeTokens();
       return Promise.reject(error);
     }
 
@@ -39,7 +35,7 @@ axios.interceptors.response.use(
 
       const success = await refreshToken();
       if (!success) {
-        redirectToLogin();
+        removeTokens();
         return Promise.reject(error);
       }
       return axios(originalRequest);
