@@ -19,7 +19,7 @@ The steps to perform the authentication flow on the application side are:
 
 - ## Instantiating a ClientOAuth2
 
-  As we said, we used a library called `client-oauth2` instead of implementing manually all the interaction between the different parties. Here is how to instantiate a client
+  As we said, we used a library called `client-oauth2` instead of implementing manually all the interactions between the different parties. Here is how to instantiate a client
 
   ```js
   export const authClient = new ClientOAuth2({
@@ -40,7 +40,7 @@ The steps to perform the authentication flow on the application side are:
   The other parameters are:
 
   - `clientId` and `clientSecret`: they identify and authenticate the application during the communications with Hydra.
-  - `scopes`: the scopes that will be asked for to the user. They depend on what the appliation should be allowed to do on behalf of the user.
+  - `scopes`: the scopes that will be asked for to the user. They depend on what the application should be allowed to do on behalf of the user.
   - `redirectUri`: the uri to which the user should be redirected after it has logged in. It is basically the URL of your application's home page.
 
 - ## Start the authentication flow:
