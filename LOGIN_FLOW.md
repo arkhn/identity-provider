@@ -5,13 +5,13 @@ The login flow implemented by Hydra is well documented here: https://www.ory.sh/
 ## Client registration
 
 First of all your client should be known by Hydra to perform any authentication flow.
-To learn about how to register a client, please read
+To learn about how to register a client, please read [HYDRA.md](HYDRA.md).
 
 To perform a code authorization flow (the one we'll talk about here) your client will need to be registered with a grant type `authorization_code` and with response types `code` and `token`.
 
 ## How to use Arkhn's oauth provider in your web app
 
-All of the queries presented below could be implemented by hand but it's preferable to use an already well-tested library that can do it for you. For instance, in our node projects, we use `client-oauth2` at Arkhn.
+All of the queries presented below could be implemented by hand but it's preferable to use an already well-tested library that can do it for you. For instance, in our node projects, we use [client-oauth2](https://www.npmjs.com/package/client-oauth2) at Arkhn.
 
 Also, please note that in the following code snippets, some helper functions are used to manipulate the tokens (as `getAccessToken`, `refreshToken`, etc.). An example of Arkhn's implementation for these can be found here: [tokenManager.ts](https://github.com/arkhn/warehouse-api/blob/master/front/src/services/tokenManager.ts).
 
@@ -147,7 +147,7 @@ The steps to perform the authentication flow on the application side are:
 
     const bodyFormData = new FormData();
     bodyFormData.set("token", accessToken);
-    const conf = {
+    const settings = {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         Accept: "application/json, application/x-www-form-urlencoded",
@@ -155,7 +155,7 @@ The steps to perform the authentication flow on the application side are:
       },
     };
     try {
-      const revokeResponse = await axios.post(REVOKE_URL, bodyFormData, conf);
+      const revokeResponse = await axios.post(REVOKE_URL, bodyFormData, settings);
       if (revokeResponse.status !== 200) console.error(revokeResponse.data);
     } catch (err) {
       console.error(err.response);
