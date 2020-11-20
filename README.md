@@ -39,7 +39,7 @@ Accept: application/json
 This endpoint lists all clients in the database.
 
 ```
-PUT /clients/{id} HTTP/1.1
+PUT /hydra-admin/clients/{id} HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 ```
