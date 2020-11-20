@@ -5,7 +5,7 @@ Having these makes it possible to distribute OAuth2 authorization grants.
 
 ## Routes exposed
 
-- "/login": the user should give its credentials here, it's how we make sure that we'll eventually give access to the API to an authorized actor.
+- "/login": the user should give its credentials here, it's how we make sure we'll eventually give access to the API to an authorized actor.
 - "/consent": on this page, the user is supposed to choose which scopes it will let the client use when fetching the resource provider.
 
 ## OAuth2 flows
@@ -20,9 +20,35 @@ Our usecase being to authenticate users and grant us access or not to our API, t
 
 Other flows as trading an access token for a refresh token are possible but still not tested nor showcased in the example.
 
+### OpenID Connect discovery
+
+```
+GET /hydra/.well-known/openid-configuration HTTP/1.1
+Accept: application/json
+```
+
+The well known endpoint can be used to retrieve information for OpenID Connect clients.
+
+### OAuth 2.0 Client
+
+```
+GET /hydra-admin/clients HTTP/1.1
+Accept: application/json
+```
+
+This endpoint lists all clients in the database.
+
+```
+PUT /clients/{id} HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+```
+
+Update an existing OAuth 2.0 Client. If you pass `client_secret` the secret will be updated and returned via the API. 
+
 ## Toy showcase
 
-Here, we show how to run Hydra, a identity provider and a basic client on your machine.
+Here, we show how to run Hydra, an identity provider and a basic client on your machine.
 
 The client serves 2 routes:
 
